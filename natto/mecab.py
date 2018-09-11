@@ -337,7 +337,17 @@ class MeCab(object):
         n = self.options.get('nbest', 1)
 
         try:
-            if self._KW_BOUNDARY in kwargs:
+            if self._KW_BOUNDARY in kwargs and isinstance(kwargs[self._KW_BOUNDARY], dict):
+                btext = self.__str2bytes(text)
+                self.__mecab.mecab_lattice_set_sentence(self.lattice, btext)
+
+                for mark in [self.MECAB_ANY_BOUNDARY,
+                             self.MECAB_TOKEN_BOUNDARY,
+                             self.MECAB_INSIDE_TOKEN]:
+                    for bpos in kwargs[self._KW_BOUNDARY].get(mark, ()):
+                        self.__mecab.mecab_lattice_set_boundary_constraint(
+                            self.lattice, bpos, mark)
+            elif self._KW_BOUNDARY in kwargs:
                 patt = kwargs.get(self._KW_BOUNDARY, '.')
                 tokens = list(self.__split_pattern(text, patt))
                 text = ''.join([t[0] for t in tokens])
@@ -362,7 +372,7 @@ class MeCab(object):
                         bpos += 1
                     self.__mecab.mecab_lattice_set_boundary_constraint(
                         self.lattice, bpos, self.MECAB_TOKEN_BOUNDARY)
-            elif self._KW_FEATURE in kwargs:
+            elif self._KW_FEATURE in kwargs and len(kwargs[self._KW_FEATURE][0]) == 2:
                 features = kwargs.get(self._KW_FEATURE, ())
                 fd = {morph: self.__str2bytes(feat) for morph, feat in features}
 
@@ -379,6 +389,15 @@ class MeCab(object):
                         self.__mecab.mecab_lattice_set_feature_constraint(
                             self.lattice, bpos, bpos+c, fd[chunk])
                     bpos += c
+            elif self._KW_FEATURE in kwargs and len(kwargs[self._KW_FEATURE][0]) == 3:
+                features = kwargs.get(self._KW_FEATURE, ())
+
+                btext = self.__str2bytes(text)
+                self.__mecab.mecab_lattice_set_sentence(self.lattice, btext)
+
+                for bpos, epos, feature in features:
+                    self.__mecab.mecab_lattice_set_feature_constraint(
+                        self.lattice, bpos, epos, self.__str2bytes(feature))
             else:
                 btext = self.__str2bytes(text)
                 self.__mecab.mecab_lattice_set_sentence(self.lattice, btext)
@@ -471,7 +490,7 @@ class MeCab(object):
 
         if self._KW_BOUNDARY in kwargs:
             val = kwargs[self._KW_BOUNDARY]
-            if not isinstance(val, self._REGEXTYPE) and not isinstance(val, str):
+            if not isinstance(val, self._REGEXTYPE) and not isinstance(val, str) and not isinstance(val, dict):
                 logger.error(self._ERROR_BOUNDARY)
                 raise MeCabError(self._ERROR_BOUNDARY)
         elif self._KW_FEATURE in kwargs:

@@ -17,7 +17,7 @@ with codecs.open(path.join(os.getcwd(), 'README.rst'),
     LONG_DESC = f.read()
 
 setup(
-    name='natto-py',
+    name='natto-py-fork',
 
     version=__version__,
 
@@ -25,10 +25,10 @@ setup(
                  '(FFI-based, no SWIG or compiler necessary)'),
     long_description=LONG_DESC,
 
-    url='https://github.com/buruzaemon/natto-py',
+    url='https://github.com/kissge/natto-py',
 
-    author='Brooke M. Fujita',
-    author_email='buruzaemon@gmail.com',
+    author='kissge',
+    author_email='mail@yusuk.eki.do',
 
     license='BSD',
 
