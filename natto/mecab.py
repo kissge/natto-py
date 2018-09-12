@@ -338,7 +338,7 @@ class MeCab(object):
 
         try:
             if self._KW_BOUNDARY in kwargs and isinstance(kwargs[self._KW_BOUNDARY], dict):
-                btext = self.__str2bytes(text)
+                btext = self.__str2bytes(text) if isinstance(text, str) else text
                 self.__mecab.mecab_lattice_set_sentence(self.lattice, btext)
 
                 for mark in [self.MECAB_ANY_BOUNDARY,
@@ -481,7 +481,7 @@ class MeCab(object):
         if text is None:
             logger.error(self._ERROR_EMPTY_STR)
             raise MeCabError(self._ERROR_EMPTY_STR)
-        elif not isinstance(text, str):
+        elif not isinstance(text, str) and not isinstance(text, bytes):
             logger.error(self._ERROR_NOTSTR)
             raise MeCabError(self._ERROR_NOTSTR)
         elif 'partial' in self.options and not text.endswith("\n"):
